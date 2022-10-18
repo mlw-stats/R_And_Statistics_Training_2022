@@ -1,0 +1,14 @@
+Dataset
+We are going to look at a subset of data taken from an electronic tuberculosis (TB) register of Blantyre which shows total number of TB registrations in a year. The dataset was constructed from available data that is routinely collected at the time of registering for TB drugs and is meant to be an electronic mirror of paper TB registers in Blantyre. This version of the dataset presents data collected from Apr 2011 to Dec 2012.
+We will use the Blantyre TB register dataset throughout the course to conduct various statistical tests. Some variables have been simulated to allow specific statistical techniques to be performed.
+
+The dataset named btTBreg has the following variables:
+• id: ID number
+• sex: Gender 1=male; 2=female
+• age of participants in years - numeric
+• hiv: HIV status 1=positive; 0=negative
+• bmi: Body mass index
+• ses: social economic status index; 1=poorest, 2=poor, 3=middle, 4=rich, 5=richest
+• cd41: CD4 count on entry - numeric
+• cd42: CD4 count on exit - numeric
+• hosp: code for central hospitals; 1=QECH, 2=KCH,3=ZCH,4=MCH,5=Mlambe

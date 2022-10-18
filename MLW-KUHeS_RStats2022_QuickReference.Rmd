@@ -1,0 +1,1362 @@
+---
+title: "MLW & KUHeS - R and Statistics Workshop - Introduction to R"
+author: "Marc Henrion"
+date: "25, 28 October & 1, 4, 8 & 11 November 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# License
+
+![](https://i.creativecommons.org/l/by/4.0/88x31.png)
+
+This document and its contents are licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).
+
+
+# Session 1 - Introduction to R
+
+## Getting started 
+
+### R and RStudio IDE
+
+There's 2 main parts of software that you will need.
+
+* R is an environment for statistical computing. It is a programming language, specifically a scripting / interpreted language that does not require compilation.
+  + [https://cran.r-project.org/](https://cran.r-project.org/)
+  
+* RStudio is a company who have developed the most used graphical user interface (GUI) / integrated development environment (IDE) for R.
+  + [https://www.rstudio.com](https://www.rstudio.com)
+  
+R is free and open source. Most latest statistical developments are first implemented in R. Unlike commercial packages (SAS, Stata, ...), there is little to no quality control for R packages other than feedback from users. Be aware of this!
+
+You will mostly interact with R through RStudio, so familiarise yourself with the interface:
+
+![RStudio interace](dataAndSupportDocs/rstudio.png)
+
+### Resources
+
+* R help files
+
+  + Type `?` followed by the name of the command you want to get help on.
+  + Type `help.start()` to open manuals, FAQs and other material.
+
+* CRAN
+
+  + Tutorials & manuals: [https://cran.r-project.org/manuals.html](https://cran.r-project.org/manuals.html)
+  + Task views: [https://cran.r-project.org/web/views/](https://cran.r-project.org/web/views/)
+
+* RStudio
+
+  + Cheatsheets: [https://rstudio.com/resources/cheatsheets/](https://rstudio.com/resources/cheatsheets/)
+
+* Text books
+
+  + Many, but this one is excellent and free: [http://r4ds.had.co.nz](http://r4ds.had.co.nz)
+ 
+* Online tutorials, blogs, forums
+
+  + Why R? webinars [http://whyr.pl/foundation/webinars/](http://whyr.pl/foundation/webinars/)
+  + R-bloggers [https://www.r-bloggers.com/](https://www.r-bloggers.com/)
+  + Stack overflow [https://stackoverflow.com/questions/tagged/r](https://stackoverflow.com/questions/tagged/r)
+  + R Graph Gallery [https://www.r-graph-gallery.com/](https://www.r-graph-gallery.com/)
+  + Data Camp [https://www.datacamp.com/](https://www.datacamp.com/)
+
+
+### R packages
+
+R is stand-alone and you can code any functions you need for your analysis. But why re-invent the wheel, when others have already done this? This is where R packages come in: they are sets of R functions and data that you can load to access specific functions, models etc. In fact, a standard installation of R comes with 15 core and 15 recommended packages:
+
+* **Base**: base, compiler, datasets, graphics, grDevices, grid, methods, parallel, splines, stats, stats4, tcltk, tools, translations, utils
+* **Recommended**: KernSmooth, MASS, Matrix, boot, class, cluster, codetools, foreign, lattice, mgcv, nlme, nnet, rpart, spatial, survival
+
+Packages are hosted either on the **C**omprehensive **R** **A**rchive **N**etwork (CRAN, [https://cran.r-project.org](https://cran.r-project.org)) or on Bioconductor ([https://bioconductor.org](https://bioconductor.org)). CRAN is the most commonly used of these with Bioconductor packages mostly targeted at bioinformaticians.
+
+You install packages from CRAN by using the `install.packages()` function.
+
+For example:
+
+```{r install, eval=F}
+install.packages("tidyverse")
+install.packages("lubridate")
+```
+
+And you load packages by using the function `library()`, for example:
+
+```{r libraries}
+library(tidyverse)
+library(lubridate)
+library(gridExtra)
+```
+
+Installation details for Bioconductor pacakges are given on the Bioconductor website for each package (see e.g. [https://bioconductor.org/packages/release/bioc/html/variancePartition.html](https://bioconductor.org/packages/release/bioc/html/variancePartition.html)).
+
+
+## Reading and writing data
+
+As the most basic task for any analysis in R, you need to be able to read your data into R and, at the end, write the results to a file on your har drive.
+
+Let's start by using some data that R comes with, write it out to the disk, then read it back in. The dataset `iris` is a famous dataset recording 150 observations of 3 species of flowers. It was extensively used by Ronald Fisher as he developed his statistical theory. Find out more about the data by typing `?iris` at the R console.
+
+### Working directory
+
+R has a **working directory**, this is the directory on your computer that you are working from. Unless you give full, absolute paths to files, all paths and filenames will be relative to this path.
+
+You can find out the current working directory with the `getwd()` function:
+
+```{r}
+getwd()
+```
+
+And you can set it using the `setwd()` command. Note that R requires, even on Windows machines, forward slashes not backward slashes (i.e. `"C:/Users/marc/Documents"` not `"C:\Users\marc\Documents"`).
+
+```{r, eval=F}
+setwd("C:/Users/marc/Documents/")
+```
+
+### Writing data to disk
+
+We will use `iris` which is a data frame of 150 rows and 5 columns (variables `Sepal.Length`, `Sepal.Width`, `Petal.Width`, `Species`). If you want to see another way of storing the same data, have a look at `iris3` - a 3-dimensional array.
+
+```{r datWrite}
+head(iris)
+dim(iris)
+table(iris$Species)
+```
+
+Now, let's write this as a comma-separated file (we first create a sub-directory to put our files in):
+
+```{r datWrite2}
+dir.create("dataAndSupportDocs",showWarnings=FALSE) # creates a directory in your current working directory
+write.csv(iris,file="dataAndSupportDocs/iris.csv",row.names=FALSE) # saves the data to a csv file
+```
+
+Check on your hard drive, you will now have a file named `iris.csv` (inside a directory named `dataAndSupportDocs`) which you can open with a text editor, Excel, ...
+
+If you want a bit more control over how the file is written (e.g. different column separator, whether or not to include row and/or column names), you can use the more general `write.table()` function.
+
+```{r}
+write.table(iris,file="dataAndSupportDocs/iris.tab",sep="\t",row.names=FALSE) # tab separated
+```
+
+### Reading data from disk
+
+Let's suppose now that this file is our dataset and we want to load it into R so that we can work with it. We need to read the content into memory (RAM) and assign it to an object in R that we can then manipulate or feed into different functions for analysis or visualisation. For this we use the function `read.csv()` and the assignment operator `<-`.
+
+```{r datRead}
+dat<-read.csv("dataAndSupportDocs/iris.csv")
+
+head(dat)
+dim(dat)
+table(dat$Species)
+```
+
+There are alternatives: the more general function `read.table()` or the function `read_csv()` from the R package `readr` which is one package contained in  a set known as the **tidyverse**. `read_csv()` will store the data as a tibble which is a special type of data frame.
+
+```{r datRead2}
+dat2<-read.table(sep=",",header=T,file="dataAndSupportDocs/iris.csv")
+
+head(dat2)
+dim(dat2)
+table(dat2$Species)
+
+# library(tidyverse)
+# tidyverse / readr package needed, else read_csv() won't be available
+dat3<-read_csv("dataAndSupportDocs/iris.csv")
+head(dat3)
+dim(dat3)
+table(dat3$Species)
+```
+
+Note above the line `# library(tidyverse)`. The hash symbol at the start means this line is a **comment**, this code will not be run and can be free text. Comments are useful to make your code more readable to others (including your future self!).
+It is good practice to use comments.
+
+Comments can also be used to skip some lines of code, which is what was done here. The comment is just to alert you to the fact that you will need to load the `tidyverse` packages for the function `read_csv()` to be available.
+
+### Assignment operator
+
+For the assignment operator `<-` that we used above, you can also write `=` or `->` (and reversing the left and right hand sides with that last operator), but R coders usually prefer to use `<-`. It basically means that you create an object named `dat` in you current working memory and you assign to this object what follows on the right hand side of the operator (in this case the contents of the file `iris.csv`).
+
+
+## Working with data
+
+### Data & object types
+
+#### Data types (in general)
+
+A variable has one of 4 levels of measurement:
+
+* **nominal** - classifies observations into different categories
+  + alive / dead
+  + human, fish, goat, bird
+
+* **ordinal** - different categories, but categories are ordered
+  + low, medium, high
+
+* **interval** - ordered data with degree of difference; ratios not meaningful
+  + temperature in centigrade: difference betwen 10^o^ and 20^o^ same as between 50^o^ and 60^o^ but 20^o^ not twice as hot as 10^o^
+
+* **ratio** - interval data with a unique, non arbitrary zero value; ratios meaningful
+  + temperature in Kelvin
+  + length
+  
+#### Data types (in R)
+
+R supports the following data types:
+
+* **Character**
+
+```{r}
+a<-c("male","female")
+```
+
+* **Integer**
+
+```{r}
+b<-1:4
+```
+
+* **Numeric / double**
+
+```{r}
+c<-8/11
+d<-pi
+```
+
+* **Logical / boolean**
+
+```{r}
+e<-1:10 %% 2 == 0
+f<-TRUE
+g<-4<2
+```
+
+* **Factor / nominal**
+
+```{r}
+h<-factor(sample(a,size=20,replace=T))
+```
+
+
+#### Useful functions
+
+Display data type of an object:
+
+```{r, eval=F}
+typeof()
+```
+
+Check if an object is of a certain data type:
+
+```{r, eval=F}
+is.character()
+is.integer()
+is.numeric()
+is.logical()
+is.factor()
+```
+
+Force data type change for an object:
+
+```{r, eval=F}
+as.character()
+as.integer()
+as.numeric()
+as.logical()
+as.factor()
+```
+
+#### Dates
+
+Dates are a special type of data and require special functions to work with. By far the most helpful package is `lubridate`. It allows you to easily parse date format, using functions like `ymd()`, `ymd_hms()`, `ym()`...
+
+See the [lubridate cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/lubridate.pdf) for more information.
+
+```{r dates}
+ymd("2022-06-04")
+
+ymd("2022 June 4")
+
+ymd_hms("2022-06-04 10:00:00")
+
+ym("2022-06")
+
+ymd("2022-06-04") - ymd("2022-03-02")
+```
+
+#### Object types
+
+* Vectors
+  + A single number or word is just a vector of length 1.
+  + You can create vectors with the function `c()`.
+  + E.g. `v1<-c(1,2,-12.34,5/6)`
+  + Shorthands for certain types of vectors, e.g. `v2<-1:10`
+  + You can access individual elements of a vector, e.g. 3rd element `v1[3]`
+  
+* Matrices
+  + Matrices hold data tables (rows and columns).
+  + All elements of a matrix need to be of the same type (e.g. all numeric or all character).
+  + You can create matrices with the function `matrix()`.
+  + E.g. `m1<-matrix(nrow=2,byrow=TRUE,1:16)`
+  + You can access individual elements of a matrix, e.g. 2nd row, 3rd column `m1[2,3]`
+  
+* Arrays
+  + Generalise matrices to have any number of dimensions (i.e. more than just 2, e.g. 3x3x2).
+  + Not used that commonly.
+  + E.g. `a1<-table(mtcars$cyl,mtcars$gear,mtcars$am)`
+  + You can access individual elements of an array, e.g. `a1[3,1,2]`
+
+* Lists
+  + Lists are very flexible objects that can hold several elements.
+  + Each element can be of a different type.
+  + Elements can (but don't need to) be named.
+  + E.g. `l1<-list(wordVector=c("hello","how","are","you","?"),numberMatrix=matrix(nrow=3,1:9))`
+  + You can access individual elements, e.g. first element `l1[[1]]` or by name `l1$wordVector`
+
+* Data frames
+  + This is the most common object you will use to work with data, e.g. `read.csv()` returns a data frame.
+  + Data frames are like matrices in that they provide a data table (rows and columns) but unlike matrices allow different data types for different columns.
+  + Technically data frames are special types of lists. This means that you can access individual columns / variables by using the `$` notation.
+  + E.g. `df1<-data.frame(pid=1:5,name=c("Chimwemwe","Esther","John","Dalitso","Julie"))` or object `dat` from earlier.
+  + You can access individual variables, e.g. `df1$name` or `df1[,"name"]` or `df[,2]`.
+  + You can access individual rows, e.g. `df1[1,]`.
+  + You can access individual elements, e.g. `df1[3,2]` or `df$name[3]`
+
+* Tibbles
+  + Tibbles are data frames, but have special methods for printing, accessing and working with them.
+  + Tibbles are used by the `tidyverse` packages.
+  + E.g. `read_csv()` returns a tibble.
+  + Use tibbles just like data frames.
+  
+The rules of *tidy* data:
+
+* 1 row = 1 observation
+* 1 column = 1 variable
+* 1 cell = 1 value.
+
+### Handling data
+
+#### Filter (observations) & select (variables)
+
+Often you only want to work with a subset of your data. This may be that you are interested only in one group of observations or that you may want to get rid of irrelevant variables. The `dplyr` package provides 2 easy to use function for this:
+
+* `filter()` allows filtering out only certain observations
+* `select()` allows selecting specific variables
+
+For example:
+
+```{r eval=F}
+filter(.data=iris,Species=="setosa") # returns only the observations where the Species variable is set to "setosa"
+select(.data=iris,Petal.Width,Petal.Length) # returns only the Petal.Width and Petal.Length variables from the iris data frame
+```
+
+Often you want to combine these operations. For this, pipes are useful - see below.
+
+#### Pipe operators
+
+The `tidyverse` package `magrittr` introduced a pipe operator, `%>%`, to R. You may be familiar with pipes if you have done any shell scripting before (e.g. `bash` or `zsh` where the pipe operator is `|`). Pipes allow to transfer the output of one function as input to another function. This allows for more concise code.
+
+Since R v4.1.0 there is also a native pipe symbol in R: `|>`.
+
+For example:
+
+```{r}
+iris %>%
+  filter(Species=="setosa") %>%
+  select(Petal.Width,Petal.Length) %>%
+  head(n=5)
+```
+
+```{r}
+iris |>
+  filter(Species=="setosa") |>
+  select(Petal.Width,Petal.Length) |>
+  head(n=5)
+```
+
+#### Creating new variables
+
+You can use the function `mutate()` (add new variables and preserve existing ones) and `transmute()` (add new variables but drop existing ones) from the `dplyr` package (part of the tidyverse).
+
+```{r}
+irisNew <- iris %>%
+  mutate(
+    LRatio=Sepal.Length/Petal.Length,
+    WRatio=Sepal.Width/Petal.Width
+  )
+head(irisNew)
+```
+
+```{r}
+irisNew2 <- iris %>%
+  transmute(
+    LRatio=Sepal.Length/Petal.Length,
+    WRatio=Sepal.Width/Petal.Width
+  )
+
+head(irisNew2)
+```
+
+This can also be useful to recode categorical variables; e.g. suppose we wish to change the `Species` variable in the `iris` dataset so that *virginica* and *versicolor* are combined into a single value.
+
+```{r}
+irisNew3 <- iris %>%
+  mutate(
+    Species=fct_recode(Species,setosa="setosa",virginica_versicolor="virginica",virginica_versicolor="versicolor")
+  )
+
+table(iris$Species)
+table(irisNew3$Species)
+```
+
+Another useful situation may be when a binary or dichotomous variable is coded as 1/2 (here we assume 1=success and 2=failure) but you want it coded 0/1 (0=failure, 1=success).
+
+```{r}
+# first we create a data frame with an ID variable and a dichotomous variable, binVar, codes as 1/2
+# then we use the mutate() function to create a new variable called binVar01 which will have the recoded values for variable binVar - now coded as 0/1
+# the actual conversion is done using the function case_when()
+df<-data.frame(
+  ID=1:10,
+  binVar=sample(1:2,replace=T,size=10,prob=c(0.2,0.8))
+) %>%
+  mutate(
+    binVar01=case_when(
+      binVar==2~0,
+      binVar==1~1
+    )
+  )
+
+table(df$binVar)
+table(df$binVar01)
+```
+
+#### Join / merge data tables
+
+At a very basic level you can use the commands `rbind()` and `cbind()` to join vectors / matrices / data frames by rows (`rbind`) or columns (`cbind`). This requires the objects getting combined to have either the same number and sae order of columns (when `rbind()` is used) or rows (for `cbind()`).
+
+
+```{r}
+irisRatios<-data.frame(
+  LRatio=iris$Sepal.Length/iris$Petal.Length,
+  WRatio=iris$Sepal.Width/iris$Petal.Width
+)
+
+irisNew3<-cbind(iris,irisRatios)
+
+head(irisNew3)
+```
+
+```{r}
+newMatrix<-rbind(1:3,4:6)
+head(newMatrix)
+```
+
+However, in many situations we want to join tables of different dimensions and we want to extract some information from one data frame and add it to another. For example you may have a first data frame consisting of individual-level data on patients and which drug they were given and a second data frame consisting of data on drugs - what is the active ingredient for example. You may want to add the drug data to the individual level data based on which drug each patient received.
+
+For such operations, **joins** are important operations. There are many ways you can join 2 data frame, depending on how you want to add information. The graphic below summarises different joins: left joins (almost always what you want to do), right joins, full joins and inner joins.
+
+You can use the `dplyr` package functions `left_join()`, `right_join()`, `full_join()` and `inner_join()` to do such join operations.
+
+![Wickham, H. & Grolemund G., R for Data Science, O’Reilly, 2016](dataAndSupportDocs//joins.png){height=400px}
+
+```{r}
+# Patient-level data
+pDat<-data.frame(
+  name=c("Marc","Ulemu","Clemens","Brigitte"),
+  age=c(37,48,46,38),
+  drug=c("Lariam","Lariam","Malarone","none")
+)
+
+# Drug-level data
+dDat<-data.frame(
+  commonName=c("Acticlate","Aralen","Jasoprim","Lariam","Malarone","Malirid","Monodox"),
+  ingredient=c("Doxycycline","Chloroquine","Primaquine","Mefloquine","Atavaquone/Proguanil","Primaquine","Doxycyline")
+)
+
+# Left join
+pDatWithDrug<-left_join(pDat,dDat,by=c("drug" = "commonName"))
+
+head(pDat)
+head(dDat)
+head(pDatWithDrug)
+```
+
+#### Pivot data (wide $\rightarrow$ long and long $\rightarrow$ wide)
+
+When data are collected with repeated measurements on the same unit over time or across different conditions (e.g. longitudinal patient data, or before / after data on the same patients), the data can be either in a *wide* format or a *long* format.
+
+Depending on what analysis is going to be done, the data may need to be in either of these 2 formats. It is important to be able to switch between both formats when needed. The package `tidyr` provides 2 useful functions for this: `pivot_longer()` and `pivot_wider()`.
+
+Their use is best illustrated with an example.
+
+```{r}
+datWide <- read.table(header=TRUE, text='
+                      subject sex control cond1 cond2
+                      1       M       7.9  12.3  10.7
+                      2       F       6.3  10.6  11.1
+                      3       F       9.5  13.1  13.8
+                      4       M      11.5  13.4  12.9
+                      ')
+datWide$subject <- factor(datWide$subject)
+
+print(datWide)
+```
+
+This is the *wide* format: 1 individual per row, multiple observations of the same variable under different conditions or fixed timepoints.
+
+**Wide to long:** `pivot_longer()`
+
+```{r, collapse=T}
+datLong<-pivot_longer(datWide,cols=c(control,cond1,cond2),names_to="condition",values_to="measurement")
+print(datLong)
+```
+
+**Long to wide:** `pivot_wider()`
+
+```{r, collapse=T}
+pivot_wider(data=datLong,names_from=condition,values_from=measurement)
+```
+
+Notes:
+
+* If you have longitudinal data with variable time points, you can only use the long format.
+* The base R package `stats` also provides a function that allows switching between logn and wide formats: `reshape()`. You can explore this function by yourself (type `?reshape` at the R console to open the documentation page for it), but generally the use of `pivot_longer()` and `pivot_wider()` is more intuitive.
+
+
+### Coding 
+
+#### R scripts
+
+When you develop code for an analysis, this will often be a lengthy set of R commands. To access this as you develop the code, it is best to save the analysis code in a script file.
+
+In RStudio, click on `File`, then `New File` and then `R Script`. In the script editor a new, blank script will open. This is just a text file that can hold your R code. You can save this to disk like any other file. You could use a `.txt` extension, but typically R scripts are saved as `.R` files.
+
+In general:
+
+* Experiment with code on the console.
+* Save the code you want to keep in a script file using the script editor.
+
+#### R functions
+
+When you need to do a given set of commands over and over again, it may be more efficient to group them in an R function - it avoids you to write repetitive code.
+
+To define a function you need to use the R function `function()`. Inside the brackets you then specify the input arguments to the function you define. The body of code for the function follows in curly brackets after the call to `function`.
+
+Below is an example where we define a new function, `summaryFunction()`, that will compute the mean and standard deviation of a specific variable in a data frame and returns this as a list of length 2.
+
+```{r}
+summaryFunction<-function(dat,var){
+  # dat = a data frame
+  # var = a character string indicating the name of the variable in the dat data frame that is to be summarised
+  
+  m<-mean(dat[,var])
+  s<-sd(dat[,var])
+  
+  return(list(mean=m,sd=s))
+}
+
+summaryFunction(dat=iris,var="Sepal.Width")
+```
+
+#### Iterations and control statements: *for* loops and *if* statements
+
+A key concept in most programming languages are mechanisms to iterate a set of instructions and to control the execution of parts of the code. There are many of these in R, but we will focus on 2 key concepts here:
+
+* *for* loops - to iterate a section of code over a vector, data frame or list
+
+* *if* statement - to write sections of code that are only run conditional on certain condition(s) to be met
+
+```{r}
+# create an empty vector of the desired size
+flowerSize<-rep(NA,nrow(iris))
+
+# iterate over all rows of the iris data frame
+for(i in 1:nrow(iris)){
+  flowerSize[i]<-iris$Petal.Length[i]+iris$Petal.Width[i]+iris$Sepal.Length[i]+iris$Sepal.Width[i]
+}
+
+irisNew2<-cbind(iris,flowerSize)
+
+head(irisNew)
+```
+
+*for* loops are slow in R. Whenever possible, attempt to *vectorise* your operations.
+
+```{r}
+# what we've just done
+forLoop<-function(){
+    flowerSize<-rep(NA,nrow(iris))
+  
+  for(i in 1:nrow(iris)){
+    flowerSize[i]<-iris$Petal.Length[i]+iris$Petal.Width[i]+iris$Sepal.Length[i]+iris$Sepal.Width[i]
+  }
+}
+
+# same operation but vectorised
+vectorOperation<-function(){
+  flowerSize<-iris$Petal.Length+iris$Petal.Width+iris$Sepal.Length+iris$Sepal.Width
+}
+
+system.time(forLoop())
+system.time(vectorOperation())
+```
+
+## Parameter estimation / summary statistics (primer)
+
+### Proportions
+
+The function `binom.test()` allows you to easily compute proportion estimates and exact binomial 95% confidence intervals:
+
+```{r props}
+propEst<-binom.test(x=sum(dat$Species=="setosa"),n=nrow(dat))
+propEst$estimate
+propEst$conf.int
+```
+
+Formatting this nicely and expressing it as percentages:
+
+```{r propsFormat}
+propNice<-paste(sep="",
+                format(nsmall=1,round(digits=1,100*propEst$estimate)),
+                "% (",
+                format(nsmall=1,round(digits=1,100*propEst$conf.int[1])),
+                "%, ",
+                format(nsmall=1,round(digits=1,100*propEst$conf.int[2])),
+                "%)")
+
+cat(propNice,file="")
+```
+
+### Means, standard deviations:
+
+To compute an arithmetic mean, the R function `mean()` can be used and for standard deviations the function `sd()` is used.
+
+```{r means}
+mu<-mean(dat$Petal.Length,na.rm=TRUE)
+sigma<-sd(dat$Petal.Length,na.rm=TRUE)
+sigma2<-sigma^2 # same as sigma2<-var(dat$Petal.Length,na.rm=TRUE)
+n<-sum(!is.na(dat$Petal.Length))
+
+ci<-c(
+  mu - qnorm(0.975)*sigma/sqrt(n),
+  mu + qnorm(0.975)*sigma/sqrt(n)
+)
+
+print(mu)
+print(sigma)
+print(sigma^2)
+print(ci)
+```
+
+### Medians, interquartile ranges:
+
+To compute a median, the function `median()` is used and for IQRs, use `quantile()`. You can also use the function `iqr()` for the latter but this returns the width of the IQR.
+
+```{r medians}
+me<-median(dat$Petal.Length,na.rm=TRUE)
+iqr<-quantile(dat$Petal.Length,probs=c(0.25,0.75),na.rm=TRUE)
+
+print(me)
+print(iqr)
+```
+
+### Grouping & summarising
+
+Often it is easiest to summarise a dataset, when you group observations. The R functions `group_by()` and `summarise()` are useful here.
+
+```{r summarise}
+dat %>%
+  group_by(Species) %>%
+  summarise(
+    mean=mean(Petal.Length),
+    median=median(Petal.Length),
+    sd=sd(Petal.Length),
+    q25=quantile(Petal.Length,probs=0.25),
+    q75=quantile(Petal.Length,probs=0.75)
+    ,.groups="drop")
+```
+
+
+# Session 2 -  Basic figures & graphs
+
+## Overview
+
+R has powerful data visualisation capabilities, especially when you start using packages.
+
+The standard R visualisation library is `graphics`, which is installed when you install R and loaded automatically at start-up. The main function here is `plot()`.
+
+However, the `graphics` package is quite basic and has inconsistent syntax and function names for different types of graphs.
+
+The `tidyverse` comes with the R package `ggplot2` which provides a more consistent way of producing graphs (it is based on a **g**rammar of **g**raphics).
+
+For example, let's do a scatter plot:
+
+```{r plot1}
+dat %>%
+  ggplot(mapping=aes(x=Petal.Length,y=Petal.Width,col=Species,pch=Species)) +
+  geom_point() +
+  scale_colour_manual(values=c("steelblue","orange","salmon"),name="Species") +
+  scale_shape_manual(values=15:17,name="Species") +
+  xlab("Petal length") +
+  ylab("Petal width") +
+  labs(title="Scatterplot of petal length and width in the iris dataset",caption="Figure produced during the KUHeS CRM R training, using ggplot2.") +
+  theme_light()
+```
+
+The **aesthetic** (the `aes()` call in the above) defines *what* you will see, i.e. the data you will plot. The **geom** will define the geometry, i.e. *how* you will plot the data.
+
+![The basics behind ggplot2 (https://github.com/rstudio/cheatsheets/raw/master/data-visualization.pdf).](dataAndSupportDocs/ggplotBasics.png){width=350px}
+
+It would not make much sense, but we *could* decide to plot the same data not as a scatterplot but as a line graph. All we need to do is to change the geom from `geom_point()` to `geom_line()`.
+
+```{r plot2}
+dat %>%
+  ggplot(mapping=aes(x=Petal.Length,y=Petal.Width,col=Species,pch=Species)) +
+  geom_line() +
+  scale_colour_manual(values=c("steelblue","orange","salmon"),name="Species") +
+  scale_shape_manual(values=15:17,name="Species") +
+  xlab("Petal length") +
+  ylab("Petal width") +
+  labs(title="Line graph of petal length and width in the iris dataset",caption="Figure produced during the KUHeS CRM R training, using ggplot2.") +
+  theme_light()
+```
+
+For very different graphs, there is very similar code to write with `ggplot2`. You can also use more than one geom:
+
+```{r plot3}
+dat %>%
+  ggplot(mapping=aes(x=Species,y=Petal.Width,col=Species)) +
+  geom_boxplot() +
+  geom_jitter(height=0,width=0.2) +
+  scale_colour_manual(values=c("steelblue","orange","salmon")) +
+  scale_fill_manual(values=c("steelblue","orange","salmon")) +
+  xlab("Species") +
+  ylab("Petal width") +
+  labs(title="Box and jitter plot of petal width against species in the iris dataset",caption="Figure produced during the MATSURV R training, using ggplot2.") 
+```
+
+
+## Resources
+
+* The [R Graph Gallery](https://www.r-graph-gallery.com/) is an excellent resource to get started when you have a specific plot in mind that you want to do for your data.
+
+* The `ggplot2` [cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-visualization.pdf) is another excellent resource.
+
+
+## Distribution figures
+
+Distributions: what values did you record for a given variable?
+
+* Discrete values (nominal, ordinal, integer-valued) values:
+    + bar plots
+    + pie charts
+    
+* Continuous values
+    + histograms
+    
+Let's generate some data:
+
+```{r}
+typesTmp<- paste(sep="","type",1:3)
+type<-factor(sample(typesTmp,
+                    size=1000,
+                    replace=T,
+                    prob=c(0.45,0.3,0.25)))
+x1<-rbinom(1000,size=1,prob=0.25)
+x2<-rpois(1000,lambda=ifelse(type=="type3",6,4))
+
+dat<-data.frame(type,x1,x2) %>%
+  mutate(x3=ifelse(type=="type1",
+                   rnorm(sum(type=="type1"),mean=-2),
+                   ifelse(type=="type2",
+                          rnorm(sum(type=="type2"),mean=2),
+                          runif(sum(type=="type3"))
+                          )
+                   )
+         ) %>%
+  mutate(x4=rnorm(n(),mean=x3))
+```
+
+### Distribution: bar plots
+
+Bar plots simply show bars the height of which is proportional to the relative frequency of the different levels of a categorical variable in your dataset. In `ggplot2`, the geom to use for barplots is `geom_barplot()`.
+
+Simple bar plots for 3 variables.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x1)) +
+  geom_bar()
+ggplot(data=dat,mapping=aes(x=x2)) +
+  geom_bar()
+ggplot(data=dat,mapping=aes(x=type)) +
+  geom_bar()
+```
+
+Stratifying a bar plot by a grouping variable (in this case the variable `type`).
+
+```{r}
+dat %>%
+  count(type,x2) %>%
+  complete(type,x2,fill=list(n=0)) %>%
+  ggplot(mapping=aes(fill=type,y=n,x=x2)) +
+  geom_bar(position="dodge",stat="identity") +
+  theme(text = element_text(size=20))
+```
+
+You can customise graphs by adding other options for the coordinate system, the annotations, the theme etc.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x2)) + 
+  geom_bar() +
+  coord_flip() +
+  ggtitle("Barplot for variable x2") +
+  xlab("values") +
+  ylab("count") +
+  theme(text = element_text(size=20))
+```
+
+
+You can change the coordinate system to get a circular plot (note, use these carefully - most often they are NOT a good idea).
+
+For this you can use `coord_polar()`.
+
+To get annotations for each bar, requires a bit more work (but see the [R Graph Gallery](https://www.r-graph-gallery.com/circular-barplot.html) for examples).
+
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x2)) +
+  geom_bar() + coord_polar(start=0) + theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = unit(rep(-2,4), "cm") # removing unnecessary margins
+  ) +
+  ylim(-100,250) # dtermines size of the inner radius
+```
+
+
+### Distribution: pie charts
+
+In `ggplot2`, pie charts are just bar charts with a special (polar) coordinate system.
+
+```{r}
+ggplot(dat, mapping=aes(x=factor(1), fill=factor(type))) +
+  geom_bar(width = 1) +
+  coord_polar("y") + 
+  xlab("") +
+  theme_void()
+```
+
+Note:
+
+Generally, R discourages the use of pie charts (they are horrible & misleading - human brains are not good at judging the relative sizes of areas).
+
+### Distribution: histograms
+
+* Summarise the distribution of continuous variables, by binning data into discrete intervals.
+* Can be used for binary and discrete variables as well, but barplots better suited for such variables.
+
+In `ggplot2`, the `geom_histogram()` is used to generate histograms.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3)) +
+  geom_histogram()
+```
+
+Note the warning message above. You can ignore this, but R is just trying to tell you that other bin widths  / number of bins may work better. You can set this by specifying the `bins` or the `bindwidth` parameter.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3)) +
+  geom_histogram(binwidth=0.1)
+
+ggplot(data=dat,mapping=aes(x=x3,stat(density))) +
+  geom_histogram(binwidth=0.15)
+```
+
+There's many other parameters you can specify to customise the histogram graph.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,stat(density))) +
+  geom_histogram(binwidth=0.15) +
+  coord_cartesian(xlim = c(-10, 10)) +
+  ggtitle("Histogram") +
+  theme_light() +
+  theme(text=element_text(size=24))
+```
+
+We can add kernel density estimates for the distribution function.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,stat(density))) +
+  geom_histogram(binwidth=0.15) +
+  geom_density(bw="SJ",col="blue",lwd=1)
+```
+
+We can stratify by a grouping variable (variable `type` in this case).
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,fill=type)) +
+  geom_histogram(binwidth=0.15,position="dodge")
+```
+
+You can change the default colours that are being used for the `type` variable. The aesthetic element governing the colour of the bars is the variable specified by `fill=type`. So to change the colours, we need to use the function `scale_fill_manual()`. 
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,fill=type)) +
+  geom_histogram(binwidth=0.15,position="dodge") +
+  scale_fill_manual(values=c("steelblue","orange","salmon"))
+```
+
+## Covariation figures
+
+Covariation figures let you visually explore whether there is a relationship between 2 or more variables.
+
+### Covariation: box & whisker, violin plots
+
+Boxplots, and their variation violin plots, allow you to explore what, if any, relationship there is between a binary / discrete / categorical and a continuous variable. For boxplots the geom `geom_boxplot()` is used is used.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=type,y=x3)) +
+  geom_boxplot()
+```
+
+Often it is nice to add individual data points on top. To better display these (since they all have the same x-axis coordinate), you need to ass jitter to their x-axis coordinates. `ggplot2` provides a geom for this: `geom_jitter()`. By specifying some transparency (the `alpha` parameter), it is easier to get an idea where the ddata density is highest.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=type,y=x3)) +
+  geom_boxplot() +
+  geom_jitter(width=0.25,height=0,alpha=0.3) # height = 0 as we only want to jitter the x-axis values, not the y-axis values
+```
+
+You can also generate horizontal boxplots, by flipping the coordinate system.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=type,y=x3)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+It is important that you understand what information is summarised in a boxplot:
+
+![Wickham, H. & Grolemund G., R for Data Science, O’Reilly, 2016](dataAndSupportDocs/boxWhiskerPlot.png)
+
+Violin plots are similar to boxplots, but they combine box plots with histograms. In `ggplot2`, the geom `geom_violin()` is used to generate these types of graphs.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=type,y=x3,fill=type)) +
+  geom_violin() +
+  geom_boxplot(width=0.05, fill="white")
+```
+
+### Covariation: scatter plots
+
+The scatter plot, which shows 2 continuous variables plotted against each other, is probably the most basic and most used covariation plot. For example, it is the basis of any graph showing a regression model.
+
+The geom `geom_point()` is used to generate scatter plots in `ggplot2`.
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,y=x4)) +
+  geom_point()
+```
+
+This can be customised and you can easily add smooth regression lines with `geom_smooth()`.
+
+Note that the colour of the individual points is given by the `col` argument and so `scale_colour_manual()` is used to specify colours (rather than `scale_fill_manual()` as was used above in the example for histograms).
+
+```{r}
+ggplot(data=dat,mapping=aes(x=x3,y=x4,col=type)) +
+  geom_point() +
+  geom_smooth() +
+  scale_colour_manual(values=c("steelblue","salmon","orange"),
+                      name="Type") +
+  xlab("Variable x3") +
+  ylab("Variable x4") +
+  ggtitle("A covariation plot.") +
+  theme_light() +
+  theme(text=element_text(size=14))
+```
+
+### Covariation: line & time plots
+
+If one of the 2 variables has an order to it, such as e.g. a time variable, then line graphs may be better suited. The geom `geom_line()` is used for this.
+
+For an example, we will use a dataset that comes with R: `beavers` which consists of body temperature measurements from 2 beavers, stored in data frame `beaver1` and `beaver2`.
+
+```{r}
+beaver<-rbind(beaver1[beaver1$day==346,],beaver2[beaver2$day==307,])
+beaver<-data.frame(
+  name=c(rep("beaver1",sum(beaver1$day==346)),
+         rep("beaver2",sum(beaver2$day==307))),beaver)
+```
+
+For a simple line graph, you just need and x and a y variable.
+
+```{r}
+beaver %>%
+  filter(name=="beaver1") %>%
+  ggplot(mapping=aes(x=time,y=temp)) +
+    geom_line()
+```
+
+You can easily stratify a line graph by a grouping variable (in this case the variable `name`) in `ggplot2`.
+
+```{r}
+ggplot(data=beaver,mapping=aes(x=time,y=temp,colour=name)) +
+  geom_line(lwd=1.5) # the lwd parameter sets the line width
+```
+
+### Covariation: heat maps and contour plots
+
+Heatmaps are useful to show covariation among 3 variables. The x- and y-axis show 2 of the variables and the third variable determines the colour of cells. The variables can be either categorical or continuous.
+
+In `ggplot2`, one geom that you can use for heatmaps is `geom_tile()`.
+
+First, we need some data.
+
+```{r}
+dens<-function(x,y){
+  return(
+    0.35*dnorm(x)*dnorm(y,sd=1.5) + 
+    0.65*dnorm(x,mean=2,sd=2)*dnorm(y,mean=3)
+  )
+}
+
+x<-seq(-2.5,6.5,by=0.05)
+y<-seq(-3,5.5,by=0.05)
+
+densSurf<-expand.grid(x=x,y=y) %>%
+  mutate(dens=dens(x,y))
+```
+
+Then we can do a basic heat map, using default colours.
+
+```{r}
+densSurf %>%
+  ggplot(mapping=aes(x=x,y=y,fill=dens)) +
+  geom_tile(width=0.05,height=0.05)
+```
+
+But we can also provide custom colour scales.
+
+```{r}
+clrs<-colorRampPalette(c("blue","red","orange","yellow","white"))
+
+densSurf %>%
+  ggplot(mapping=aes(x=x,y=y,fill=dens)) +
+  geom_tile(width=0.05,height=0.05) +
+  scale_fill_gradientn(colours = clrs(200),name="probability density") +
+  theme_minimal()
+```
+
+Contour plots are similar but use contour lines rather than colour scales to show variation in the third variable.
+
+```{r}
+ggplot(data=densSurf,mapping=aes(x=x,y=y,z=dens)) +
+  geom_contour()
+```
+
+You can combine heampaps and contour plots.
+
+```{r}
+densSurf %>%
+  ggplot(mapping=aes(x=x,y=y,fill=dens,z=dens)) +
+  geom_tile(width=0.05,height=0.05) +
+  geom_contour(col="darkgrey",lwd=0.35,alpha=0.75) +
+  scale_fill_gradientn(colours = clrs(200),name="probability density") +
+  theme_minimal()
+```
+
+## Maps
+
+You can plot geographical location data like any other type of data.
+
+However to load map data, deal with projections of 3-dimensional spherical coordinates onto a 2-dimensional plane and / or plot underlying geographical features is not trivial and beyond the scope of this introduction to R (and in general it is highly recommended you attend a GIS training for such applications).
+
+
+## Multi-panel figures
+
+There's multiple ways to generate multi-panel figures. Here we just cover 2 examples.
+
+For a basic, but general way of combining multipe graphs onto the same figure, the function `grid.arrange()` from the R package `gridExtra` can be used.
+
+The procedure is very simple:
+  * Load the package (if not loaded already): `library(gridExtra)`
+  * Assign each `ggplot()` call to an object (e.g. `p1<-ggplot(...) + ...`)
+  * Produce a multipanel figure with `grid.arrange(p1,p2,...,nrow=2)`
+
+The `nrow` parameter specifies over how many rows you want to arrange the plots.
+
+```{r, fig.width=16, fig.height=8, message=F, warning=F}
+g1<-ggplot(data=dat,mapping=aes(x=type,y=x3)) +
+  geom_boxplot() +
+  geom_jitter(width=0.25,height=0,alpha=0.3) +
+  xlab("") +
+  ylab("Variable x3") +
+  ggtitle("A box & jitter plot.") +
+  theme_minimal()
+
+g2<-ggplot(data=dat,mapping=aes(x=x3,y=x4,col=type)) +
+  geom_point() +
+  geom_smooth() +
+  scale_colour_manual(values=c("steelblue","salmon","orange"),
+                      name="Type") +
+  xlab("Variable x3") +
+  ylab("Variable x4") +
+  ggtitle("A covariation plot.") +
+  theme_light() +
+  theme(text=element_text(size=14))
+
+grid.arrange(g1,g2,nrow=1)
+```
+
+The other approach we will cover, is if you want to repeat the same graph for different groups of observations within your dataset. This is called *faceting* and in `ggplot2` the function `facet_wrap()` allows to do this very easily.
+
+```{r}
+iris %>%
+  ggplot(mapping=aes(x=Petal.Length,y=Petal.Width)) +
+  geom_point() +
+  facet_wrap(~Species)
+```
+
+## Saving graphs to files
+
+In `ggplot2`, the simplest way to save graphs is to use the function `ggsave()`.
+
+```{r, eval=F}
+ggsave(g1,filename="myplot.png",width=16,height=9,units="cm",dpi=450)
+```
+
+Another way is to enclose your plotting code inside a statement that specifies a *graphics device*. "Graphics device" means a pdf, png, jpg or other file.
+
+Example:
+
+```{r, eval=F}
+pdf(width=16,height=9,file="myfile.pdf") # opens the device; pdf will produce vector graphics
+# plotting code here
+dev.off() # closes the device
+```
+
+Or:
+
+```{r, eval=F}
+png(width=16,height=9,units="in",res=450) # raster graphics
+# plotting code here
+dev.off()
+```
+
+
+# Sessions 4 & 5 - Basic statistical analysis
+
+## Common statistical tests
+
+In this section we will provide a very quick introduction to how to do common statistical tests in R. We will not cover the theory and assumptions behind those tests - you will cover this later in the week in lectures. We exclusively focus on the R commands to do these tests.
+
+Specifically we will look at:
+* Two-sample t-test.
+* Wilcoxon rank-sum test.
+* One-way ANOVA.
+* Kruskal-Wallis test.
+* Tow-sample test for proportions.
+
+### Two-sample t-test.
+
+The two-sample t-test compares the sample means of a given variable across 2 groups of observations. It tests the null hypothesis of no difference in means against the alternative of the means in both groups to be different from each other. The two-sample t-test assumes that the sample means are normally distributed.
+
+In R, you use the command `t.test()` to perform a t-test. You can either specify directly 2 vectors of observations or you can use the *formula* syntax in R.
+
+As an example, let's compare the sample means of the variable `Sepal.Width` between the versicolor and virginica species of flowers in the iris dataset.
+
+```{r}
+# specify 2 vectors as input arguments x and y
+vec1<-iris$Sepal.Width[iris$Species=="versicolor"]
+vec2<-iris$Sepal.Width[iris$Species=="virginica"]
+t.test(x=vec1,y=vec2)
+```
+
+The p-value is `r round(digits=4,t.test(x=vec1,y=vec2)$p.value)` which is less than 0.05. So there is enough evidence, at the 5% significance threshold, to reject the null hypothesis that the 2 flower species have the same sepal width.
+
+We can also use the *formula* syntax to do the same test. In this syntax you specify a formula of the format **y ~ x** where y is the response variable and x is the predictor variable. You then also need to specify a data frame that holds the data for the 2 specified variables.
+
+```{r}
+t.test(Sepal.Width~Species,data=iris %>% filter(Species!="setosa"))
+```
+
+The function `t.test()` can also be used for one-sample t-tests as well as paired t-tests. To find out how to do this, start by reading the manual page for the function by typing `?t.test` at the console.
+
+
+### Wilcoxon rank-sum test
+
+The Wilcoxon rank-sum test, also called the two-sample Wilcoxon test or the Mann-Whitney U test, is a non-parametric alternative to the two-sample t-test. Rather than comparing the sample means, this test actually compares the entire distributions of a variable in 2 groups. It is most sensitive to changes in the median of the distribution and so this test is often interpreted as testing the null hypothesis of equal medians in two groups.
+
+Unlike the t-test, the Wilcoxon rank-sum test does not assume a parametric distribution (the t-test assumed the normal distribution) for the data or statistics derived from the data (for samples containing 50 finite values or more, R will still use a normal approximation in the calculations though). It ranks the full combined data and then compares ranks between the 2 groups. If there was no difference in distribution between the 2 groups, then the ranks for the observations in each group should be similar. If not, then one group will have higher (or lower) ranks than the other.
+
+In R you use the function `wilcox.test()` to perform a Wilcoxon rank-sum test. The use of this function is very similar to `t.test()`.
+
+Specifying 2 vectors as input arguments:
+
+```{r}
+wilcox.test(x=vec1,y=vec2)
+```
+
+Using the formula syntax:
+
+```{r}
+wilcox.test(Sepal.Width~Species,data=iris %>% filter(Species!="setosa"))
+```
+
+The p-value is `r round(digits=4,wilcox.test(x=vec1,y=vec2)$p.value)` which, while slightly different than the one from the t-test, us also less than 0.05. So we conclude there is enough evidence to reject the null hypothesis of equal sepal width distributions for the 2 species of flowers.
+
+The function `wilcox.test()` can also be used for one-sample Wilcoxon tests (also called Wilcoxon signed-rank tests) as well as paired tests. To find out how to do this, start by reading the manual page for the function by typing `?wilcox.test` at the console.
+
+
+### One-way ANOVA
+
+ANOVA is an acronym for **an**alysis **o**f **va**riance. It generalises the t-test to more than 2 groups. It is a parametric test, assuming normality of sample means, and the test statistics uses the F distribution, hence one-way ANOVA is an F-test.
+
+Specifically, ANOVA tests the null hypothesis that all means $\mu_1,...,\mu_k$ of $k\geq2$ groups are equal against the alternative hypothesis that they are not. If the null hypothesis is rejected, the test will not tell why it is rejected: it could be that a single mean in one group is different from the others or no 2 means are the same -- you will have to drill down after a null hypothesis rejection.
+
+The test is based on comparing the variance (or sum of squares) between groups to that within groups, hence the name of the test.
+
+One-way ANOVA is really just a linear regression for a continuous response variable and a single categorical predictor variable with $k$ levels.
+
+In R, you can use the functions `aov()` and `anova()` to do a one-way ANOVA test. In both cases, you will need to use formula syntax.
+
+As an example we can compare the sample means for `Sepal.Width` between all 3 species of flowers in the iris dataset.
+
+```{r}
+# using aov(); to get the p-value, you need to use summary() on the output from aov()
+summary(aov(Sepal.Width~Species,data=iris))
+
+# using anova(); you first need to fit a linear regression model for Sepal.Width and Species
+anova(lm(Sepal.Width~Species,data=iris))
+```
+
+The p-value is almost 0: it is less than $2.2\times10^{-16}$ which is the limit of the numerical precision on a standard computer -- the null hypothesis of equal means is rejected.
+
+Note that for $k=2$, one-way ANOVA is identical to the two-sample t-test:
+
+```{r}
+summary(aov(Sepal.Width~Species,data=iris %>% filter(Species!="setosa")))
+```
+
+### Kruskal-Wallis test
+
+The Kruskal-Wallis test is the non-parametric equivalent to one-way ANOVA. It does not assume normal distribution of sample means and is based on ranks of all observations similar to the Wilcoxon rank-sum test. In R you use the function `kruskal.test()`.
+
+The input can either be specified using the formula syntax or as a list object with each group being represented by a vector of observations.
+
+```{r}
+# using a list of vectors
+vec1<-iris$Sepal.Width[iris$Species=="versicolor"]
+vec2<-iris$Sepal.Width[iris$Species=="virginica"]
+vec3<-iris$Sepal.Width[iris$Species=="setosa"]
+kruskal.test(list(vec1,vec2,vec3))
+
+# using formula syntax
+kruskal.test(Sepal.Width~Species,data=iris)
+```
+
+The p-value is again extremely low, though just above the numerical precision limit. The conclusion is the same: the null hypothesis of equal distribution of `Sepal.Width` across the 3 flower species is rejected.
+
+
+### Two-sample test for proportions
+
+When comparing a binary variables between 2 groups, it is best to use a test designed for comparing proportions. In R you can use the function `prop.test()` for this. It compares the null hypothesis of equal proportions in both groups against the alternative of the 2 proportions not being equal, assuming a normal approximation.
+
+As an alternative you can arrange the data in a 2x2 table and then test the null hypothesis of independence of the row and the column variable against the alternative that they are not independent. For this you can either use an exact Fisher's test (`fisher.test()` in R) or an approximate Chi-squared test (`chisq.test()` in R). The chi-squared test is identical to using `prop.test()`.
+
+As an example, let's generate a dataset consisting of 2 treatment groups (A, 30 observations, and B, 70 observations) and an outcome variable indicating whether the treatment was successful, assuming that treatment A has a true success rate of 40% and B has a true success rate of 25%.
+
+```{r}
+dat<-data.frame(
+  group=c(rep("A",30),rep("B",70)),
+  cured=0
+)
+dat$cured[dat$group=="A"]<-sample(x=0:1,size=sum(dat$group=="A"),replace=T,prob=c(0.6,0.4))
+dat$cured[dat$group=="B"]<-sample(x=0:1,size=sum(dat$group=="B"),replace=T,prob=c(0.75,0.25))
+```
+
+```{r}
+prop.test(x=c(sum(dat$cured[dat$group=="A"]),sum(dat$cured[dat$group=="B"])),n=c(sum(dat$group=="A"),sum(dat$group=="B")))
+
+tbl2x2<-table(dat$group,dat$cured)
+chisq.test(tbl2x2)
+fisher.test(tbl2x2)
+```
+
+## Linear regression
+
+The simplest case for a regression model is the one where we have 2 continuous variables: a response or dependent variable y and a predictor or independent variable x. In the linear regression problem, we then try to find parameters $\beta_0$ and $\beta_1$ such that we can express every observation $\{x_i,y_i\},\;i=1,\ldots,n$ in a dataset of $n$ observations as
+
+$$
+y_i=\beta_0+\beta_1x_i+\epsilon_i
+$$
+Where $\epsilon_i$ are error or residual terms.
+
+The technical aspects revolve around how to estimate $\beta_0$ and $\beta_1$ such that we end op with *optimal* parameter values for them. There are 2 main ways to go about this:
+
+1. Try to minimise the total error, usually expressed as a sum of squares: $\sum_i \epsilon_i^2$. This is called **least squares estimation**.
+2. Maximise the likelihood of observing the data that was observed assuming that the model $E[Y]=\beta_0+\beta_1X$ generated the data. This is called **maximum likelihood estimation**.
+
+The first method does not make any assumptions about the distribution of the error $\epsilon_i$ and is purely a way of optimising the fit of the regression line. Visually, we aim to minimise the sum of the squared lengths of the red segments in the figure below. 
+
+```{r}
+df<-tibble(
+  x=runif(25,min=-5,max=5),
+  y=1.5*x+rnorm(25,sd=2)+3.5
+)
+
+ggplot(data=df,aes(x=x,y=y)) + 
+  geom_abline(intercept=3,slope=1,colour="steelblue",lwd=2) +
+  geom_segment(aes(x=x,xend=x,y=y,yend=x+3),colour="red",lwd=1.5) +
+  geom_point(size=4) +
+  theme(text = element_text(size=20)) 
+```
+
+The second method requires assuming a probability distribution for the random variable Y, given the observed values of X (in other words, this involves assuming a probability distribution for the error terms $\epsilon_i$).
+
+In the most common situation, one assumes that the errors are normally distributed with mean 0 and in this case, the 2 methods give the same results.
+
+In R you can use the function `lm()` for a least squares fit and the function `glm()` for a maximum likelihood fit. Unless you specify other distributions in `glm`, both functions will give the same results. The model is specified using the formula syntax we have seen when we looked at the t-test.
+
+We can use the `df` data frame we generated above for the least squares figure for an example.
+
+```{r}
+modLm<-lm(y~x,data=df)
+summary(modLm)
+
+modGlm<-glm(y~x,data=df)
+summary(modGlm)
+```
+
+The 2 parameters $\beta_0$ and $\beta_1$ have a specific interpretation:
+
+* $\beta_0$ is where the line intersects the y-axis. It is called the *intercept* and is the expected value of $Y$ if $X$ is set to 0.
+* $\beta_1$ determines the direction and steepness of the regression line. It is called the *slope* and is the average increase in $Y$ if $X$ is increased by 1 unit.
+
+$\beta_0$ and $\beta_1$ are the true, unknown parameter values. For any dataset we can only calculate estimates of them: $\hat{\beta}_0$ and $\hat{\beta}_1$. The object of statistical inference is usually $\beta_1$, the slope parameter: if it is 0, then there is no (linear) relationship between the 2 variables. As such, one often want to test the null hypothesis that the slope parameter is 0 against the alternative that it is not 0.
+
+The p-value from this test is what R reports in the column `Pr(>|t|)` in the "Coefficients" section of the screen output from `lm()` and `glm()`. In the above example, this p-value is extremely low (essentially 0) and so, at the 5% signifiance level, we conclude that in this example, there is sufficient evidence to reject the null hypothesis that the slope is 0, i.e. there is enough evidence to reject the null hypothesis that $Y$ and $X$ are not linearly related.
+
+You can specify more than one predictor / independent variable, simply use the `+` sign on the left-hand side of `~`:
+
+```{r}
+# generating another variable
+df<-df %>%
+  mutate(z=rnorm(nrow(df)))
+
+# fitting a model with 2 predictor variables
+modGlm2<-glm(y~x+z,data=df)
+summary(modGlm2)
+```
+
+
+
+
