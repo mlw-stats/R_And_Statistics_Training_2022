@@ -1,0 +1,91 @@
+---
+title: "Session 6 Exercise"
+author: "Marc Henrion"
+date: "10 November 2022"
+output: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse) # so that we can use ggplot2 and other tidyverse packages
+```
+
+## Simulate and write the data
+
+In the code chunk below, a simple dataset is simulated and saved to disk.
+The exercise did not ask you to do is as part of the quarto document, but I wanted to include this here, so that you can fully reproduce my document.
+
+```{r simData}
+set.seed(202012) # this will allow you to EXACTLY replicate the same dataset and results
+
+dat<-data.frame(
+  type=factor(sample(c("A","B"),size=100,prob=c(0.6,0.4),replace=T)),
+  x=rnorm(100,sd=5),
+  y=rexp(100)
+)
+
+dat$z<-ifelse(dat$type=="A", 2*dat$x-dat$y+5, 1.25*dat$x-0.5*dat$y+1) + rnorm(100,sd=1.25)
+
+if(!dir.exists("examplePack/data")){dir.create("examplePack/data",recursive=T)}
+
+save(dat,file="examplePack/data/dat.rda")
+
+rm(dat) # just so that we have to read it back in again
+```
+
+## Load the data
+
+In the chunk below this text commentary, the simulated data is loaded back into R (this is where I would expect your documents to have started).
+
+```{r loadData}
+load("examplePack/data/dat.rda")
+
+ls() # just to check the data is now loaded
+```
+
+## Simple analyses and graphs
+
+### t-test
+
+Let's do a t-test first, comparing the sample means of variable `z` between the two groups defined by the variable `type`.
+
+```{r ttest}
+resTest<-t.test(z~type,data=dat)
+print(resTest)
+```
+
+Given that the p-value for this is `r resTest$p.value`, we conclude that there is `r ifelse(resTest$p.value<0.05,"sufficient","insufficient")` evidence, at the significance level $\alpha=0.05$ to reject the null hypothesis of equal sample means in both groups.
+
+This conclusion is conditional on the sample means to be approximately normally distributed.
+
+```{r boxplot, fig.width=8, fig.height=5}
+dat %>%
+  ggplot(mapping=aes(x=type,y=z,col=type)) +
+  geom_boxplot(alpha=0.5) +
+  geom_jitter(width=0.25,height=0) +
+  xlab("Type") +
+  ylab("z") +
+  ggtitle(paste(sep="","p = ",round(digits=4,resTest$p.value))) +
+  scale_colour_manual(values=c("steelblue","orange"))
+```
+
+### Linear regression
+
+```{r linReg}
+resLinMod<-glm(z~x,family=gaussian,data=dat)
+print(summary(resLinMod))
+
+p<-summary(resLinMod)$coefficients["x","Pr(>|t|)"]
+```
+
+The regression coefficient for x is $\beta1=$ `r coef(resLinMod)["x"]`. The associated p-value for the null hypothesis test of $H_0:\beta_1=0$ against $H_1: \beta_1\neq0$ is $p=$ `r p`. Since this is `r ifelse(p<0.05,"less than","greater or equal than")` 0.05, we `r ifelse(p<0.05,"reject","do not reject")` $H_0$.
+
+```{r linRegPlot, fig.width=8, fig.height=4.5}
+dat %>%
+  ggplot(mapping=aes(x=x,y=z,col=type)) +
+  geom_point() +
+  geom_smooth(method="lm",col="black",lty=2,lwd=1.25) +
+  scale_colour_manual(values=c("steelblue","orange")) +
+  ggtitle("Linear regression model for z regressed on x.")
+```
